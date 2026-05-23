@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #fffcf0;
+  --color-primary-100: #fffae0;
+  --color-primary-200: #fff0b3;
+  --color-primary-300: #ffe066;
+  --color-primary-400: #ffd11a;
+  --color-primary-500: #ffbf00;
+  --color-primary-600: #e6ac00;
+  --color-primary-700: #cc9900;
+  --color-primary-800: #997300;
+  --color-primary-900: #664d00;
+  --color-primary-950: #332600;
+
+  /* BAPS Saffron */
+  --color-saffron: #ff9933;
+  --color-saffron-dark: #cc7a29;
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
