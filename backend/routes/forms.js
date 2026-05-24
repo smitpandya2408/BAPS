@@ -1,35 +1,53 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const ChildForm = require('../models/ChildForm');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Multer Setup
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+// Cloudinary Config
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Cloudinary Storage Setup
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'baps_forms',
+        allowed_formats: ['jpg', 'png', 'jpeg'],
+    },
+});
+
 const upload = multer({ storage });
 
 // Get all forms
 router.get('/', async (req, res) => {
     try {
-        const { search } = req.query;
-        let query = {};
+        const { search, talent } = req.query;
+        let query = { $and: [] };
+
         if (search) {
-            query = {
+            query.$and.push({
                 $or: [
                     { firstName: { $regex: search, $options: 'i' } },
                     { lastName: { $regex: search, $options: 'i' } },
                     { childId: { $regex: search, $options: 'i' } }
                 ]
-            };
+            });
         }
-        const forms = await ChildForm.find(query).sort({ createdAt: -1 });
+
+        if (talent) {
+            const talentList = talent.split(',');
+            query.$and.push({
+                $or: talentList.map(t => ({ [`talent.${t}`]: true }))
+            });
+        }
+
+        const finalQuery = query.$and.length > 0 ? query : {};
+        const forms = await ChildForm.find(finalQuery).sort({ createdAt: -1 });
         res.json(forms);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -111,7 +129,7 @@ router.post('/', upload.single('photo'), async (req, res) => {
         formData = cleanFormData(formData);
 
         if (req.file) {
-            formData.photo = `/uploads/${req.file.filename}`;
+            formData.photo = req.file.path;
         }
 
         const form = new ChildForm(formData);
@@ -133,7 +151,7 @@ router.put('/:id', upload.single('photo'), async (req, res) => {
         formData = cleanFormData(formData);
 
         if (req.file) {
-            formData.photo = `/uploads/${req.file.filename}`;
+            formData.photo = req.file.path;
         }
 
         const form = await ChildForm.findByIdAndUpdate(req.params.id, formData, { new: true, runValidators: true });

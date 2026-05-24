@@ -11,7 +11,26 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-});
+    name: {
+        type: String,
+        default: '',
+    },
+    role: {
+        type: String,
+        enum: ['admin', 'user'],
+        default: 'user',
+    },
+    permissions: {
+        canView: { type: Boolean, default: true },
+        canAdd: { type: Boolean, default: false },
+        canEdit: { type: Boolean, default: false },
+        canDelete: { type: Boolean, default: false },
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
+}, { timestamps: true });
 
 userSchema.pre('save', async function () {
     if (!this.isModified('password')) return;

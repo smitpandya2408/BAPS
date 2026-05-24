@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../api/config';
 import { Printer, Download, ArrowLeft, User, Phone, MapPin, Calendar, BookOpen, Star, Info } from 'lucide-react';
 
 const ViewDetails = () => {
@@ -11,7 +12,7 @@ const ViewDetails = () => {
     useEffect(() => {
         const fetchForm = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/forms/${id}`);
+                const res = await axios.get(`${API_URL}/api/forms/${id}`);
                 setForm(res.data);
             } catch (error) {
                 console.error(error);
@@ -54,7 +55,7 @@ const ViewDetails = () => {
                         <div className="w-full md:w-48 flex flex-col items-center flex-shrink-0">
                             <div className="w-48 h-60 border-4 border-gray-50 rounded-2xl overflow-hidden shadow-inner bg-gray-50">
                                 {form.photo ? (
-                                    <img src={`http://localhost:5000${form.photo}`} alt="Child" className="w-full h-full object-cover" />
+                                    <img src={form.photo.startsWith('http') ? form.photo : `${API_URL}${form.photo}`} alt="Child" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center"><User size={80} className="text-gray-200" /></div>
                                 )}

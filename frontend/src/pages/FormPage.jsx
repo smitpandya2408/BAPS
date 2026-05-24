@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../api/config';
 import { toast } from 'react-hot-toast';
 import { Save, ArrowLeft, Camera, User, BookOpen, Star, Info } from 'lucide-react';
 
@@ -59,7 +60,7 @@ const FormPage = () => {
         if (id) {
             const fetchForm = async () => {
                 try {
-                    const res = await axios.get(`http://localhost:5000/api/forms/${id}`);
+                    const res = await axios.get(`${API_URL}/api/forms/${id}`);
                     const data = res.data;
 
                     // Format dates for inputs
@@ -88,7 +89,10 @@ const FormPage = () => {
                         }
                     }));
 
-                    if (data.photo) setPhotoPreview(`http://localhost:5000${data.photo}`);
+                    if (data.photo) {
+                        const photoUrl = data.photo.startsWith('http') ? data.photo : `${API_URL}${data.photo}`;
+                        setPhotoPreview(photoUrl);
+                    }
                 } catch (error) {
                     toast.error('ફોર્મ લોડ કરવામાં ભૂલ');
                 }
@@ -180,10 +184,10 @@ const FormPage = () => {
 
         try {
             if (id) {
-                await axios.put(`http://localhost:5000/api/forms/${id}`, data, { timeout: 30000 });
+                await axios.put(`${API_URL}/api/forms/${id}`, data, { timeout: 30000 });
                 toast.success('ફોર્મ સફળતાપૂર્વક અપડેટ થયું');
             } else {
-                await axios.post('http://localhost:5000/api/forms', data, { timeout: 30000 });
+                await axios.post(`${API_URL}/api/forms`, data, { timeout: 30000 });
                 toast.success('ફોર્મ સફળતાપૂર્વક સેવ થયું');
             }
             navigate('/');
@@ -424,7 +428,18 @@ const FormPage = () => {
                         </div>
                         {/* Same fields for others ... shortened for space but keeping logic */}
                         {['study', 'occupation', 'lastSatsangExam', 'board', 'elderSatsangAttendance', 'gharSabha', 'ravPrakash', 'varg', 'satsang', 'gunatit'].map(field => (
-                            <div key={field}><label className="text-xs font-bold text-gray-500 capitalize">{field === 'ravPrakash' ? 'રવા. પ્રકાશ' : field}</label>
+                            <div key={field}><label className="text-xs font-bold text-gray-500 capitalize">
+                                {field === 'ravPrakash' ? 'રવા. પ્રકાશ' :
+                                    field === 'lastSatsangExam' ? 'છેલ્લી સત્સંગ પરીક્ષા' :
+                                        field === 'elderSatsangAttendance' ? 'સભામાં હાજરી' :
+                                            field === 'gharSabha' ? 'ઘરસભા' :
+                                                field === 'study' ? 'અભ્યાસ' :
+                                                    field === 'occupation' ? 'વ્યવસાય' :
+                                                        field === 'board' ? 'બોર્ડ' :
+                                                            field === 'varg' ? 'વર્ગ' :
+                                                                field === 'satsang' ? 'સત્સંગ' :
+                                                                    field === 'gunatit' ? 'ગુણાતીત' : field}
+                            </label>
                                 <input type="text" value={formData.parentInfo.father[field] || ''} onChange={(e) => handleInputChange(e, 'parentInfo', 'father', field)} className="w-full p-2 border rounded-lg text-sm" />
                             </div>
                         ))}

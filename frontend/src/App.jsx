@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import FormPage from './pages/FormPage';
 import ViewDetails from './pages/ViewDetails';
+import UserManagement from './pages/UserManagement';
 import Layout from './components/Layout';
 
 const ProtectedRoute = ({ children }) => {
@@ -27,6 +28,7 @@ function App() {
             <Route path="new-form" element={<FormPage />} />
             <Route path="edit-form/:id" element={<FormPage />} />
             <Route path="view-form/:id" element={<ViewDetails />} />
+            <Route path="users" element={<UserManagement />} />
           </Route>
         </Routes>
       </AuthProvider>
