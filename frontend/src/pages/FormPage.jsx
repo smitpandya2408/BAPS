@@ -101,6 +101,22 @@ const FormPage = () => {
         }
     }, [id]);
 
+    // Automatically calculate age when DOB changes
+    useEffect(() => {
+        if (formData.dob) {
+            const birthDate = new Date(formData.dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age >= 0 && age.toString() !== formData.age) {
+                setFormData(prev => ({ ...prev, age: age.toString() }));
+            }
+        }
+    }, [formData.dob]);
+
     const handleInputChange = (e, section, subsection, innerSection, field) => {
         const { name, value, type, checked } = e.target;
         const val = type === 'checkbox' ? checked : value;
