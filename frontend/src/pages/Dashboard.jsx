@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../api/config';
 import { useAuth } from '../context/AuthContext';
-import { Search, Plus, Eye, Edit, Trash2, User, Phone, MapPin } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Trash2, User, Phone, MapPin, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
     const { hasPermission } = useAuth();
@@ -40,6 +41,119 @@ const Dashboard = () => {
                 toast.error('ભૂલ આવી');
             }
         }
+    };
+
+    const handleExport = () => {
+        if (forms.length === 0) {
+            toast.error('એક્સપોર્ટ માટે કોઈ ડેટા નથી');
+            return;
+        }
+
+        const boolToYesNo = (val) => val ? 'હા' : 'ના';
+        const formatDate = (d) => d ? new Date(d).toLocaleDateString('gu-IN') : '';
+
+        const exportData = forms.map((form, index) => ({
+            'ક્રમ': index + 1,
+            'બાળક ID': form.childId || '',
+            'પ્રથમ નામ': form.firstName || '',
+            'પિતાનું નામ': form.fatherName || '',
+            'અટક': form.lastName || '',
+            'જન્મ તારીખ': formatDate(form.dob),
+            'ઉંમર': form.age || '',
+            'ફોન નં.': form.phone || '',
+            'સરનામું': form.address || '',
+            'છેલ્લી પરીક્ષા': form.lastExam || '',
+            'પરિણામ': form.result || '',
+            'બાલપ્રકાશ ગ્રાહક': form.balPrakashSubscriber || '',
+            'ગ્રૂપ': form.group || '',
+            'BSS સભ્ય': form.bssMember || '',
+            'કોઓર્ડિનેટર': form.coordinator || '',
+
+            // Education
+            'ધોરણ': form.education?.standard || '',
+            'માધ્યમ': form.education?.medium || '',
+            'શાળા': form.education?.school || '',
+            'ગ્રેડ': form.education?.grades || '',
+
+            // Sanskar
+            'કંઠી': boolToYesNo(form.samskar?.kanthi),
+            'નિત્યપૂજા': boolToYesNo(form.samskar?.nityapuja),
+            'તિલક-ચાંદલો': boolToYesNo(form.samskar?.tilakChandlo),
+            'પંચાંગ પ્રણામ': boolToYesNo(form.samskar?.panchangPranam),
+            'આરતી': boolToYesNo(form.samskar?.arti),
+            'અષ્ટક': boolToYesNo(form.samskar?.ashtak),
+            'નિયમિતતા': boolToYesNo(form.samskar?.regularity),
+            'જમતા પહેલા પ્રાર્થના': boolToYesNo(form.samskar?.prayerBeforeMeal),
+            'વ્યસનમુક્ત': boolToYesNo(form.samskar?.noAddiction),
+            'બહારનું ખાવાનું નહીં': boolToYesNo(form.samskar?.noOutsideFood),
+            'એકાદશી': boolToYesNo(form.samskar?.ekadashi),
+            'TV/સિનેમા નહીં': boolToYesNo(form.samskar?.noTvCinema),
+            '૭ કલાક અભ્યાસ': boolToYesNo(form.samskar?.study3Hours),
+            'દૈનિક સત્સંગ વાંચન': boolToYesNo(form.samskar?.dailySatsangReading),
+            'ઘરસભા હાજરી': boolToYesNo(form.samskar?.gharSabhaAttendance),
+            'સાપ્તાહિક મંદિર મુલાકાત': boolToYesNo(form.samskar?.weeklyTempleVisit),
+
+            // Talent
+            'વકતૃત્વ': boolToYesNo(form.talent?.vaktrutva),
+            'નૃત્ય': boolToYesNo(form.talent?.nrutya),
+            'તબલા': boolToYesNo(form.talent?.tabla),
+            'ગાયન': boolToYesNo(form.talent?.gayan),
+            'ચિત્ર': boolToYesNo(form.talent?.chitra),
+            'કરાટે': boolToYesNo(form.talent?.karate),
+            'વાદવિવાદ': boolToYesNo(form.talent?.vadvivad),
+            'સેવા સંચાલન': boolToYesNo(form.talent?.sevaSanchalan),
+            'કોમ્પ્યુટર': boolToYesNo(form.talent?.computer),
+            'લેખન': boolToYesNo(form.talent?.lekhan),
+            'વાંચન': boolToYesNo(form.talent?.vachan),
+            'અભિનય': boolToYesNo(form.talent?.abhinay),
+            'અન્ય ટેલેન્ટ': boolToYesNo(form.talent?.other),
+
+            // Father Info
+            'પિતા - નામ': form.parentInfo?.father?.name || '',
+            'પિતા - ઉંમર': form.parentInfo?.father?.age || '',
+            'પિતા - ફોન': form.parentInfo?.father?.phone || '',
+            'પિતા - ઈમેલ': form.parentInfo?.father?.email || '',
+            'પિતા - અભ્યાસ': form.parentInfo?.father?.study || '',
+            'પિતા - વ્યવસાય': form.parentInfo?.father?.occupation || '',
+            'પિતા - છેલ્લી સત્સંગ પરીક્ષા': form.parentInfo?.father?.lastSatsangExam || '',
+            'પિતા - બોર્ડ': form.parentInfo?.father?.board || '',
+            'પિતા - સત્સંગ': form.parentInfo?.father?.satsang || '',
+
+            // Mother Info
+            'માતા - નામ': form.parentInfo?.mother?.name || '',
+            'માતા - ઉંમર': form.parentInfo?.mother?.age || '',
+            'માતા - ફોન': form.parentInfo?.mother?.phone || '',
+            'માતા - ઈમેલ': form.parentInfo?.mother?.email || '',
+            'માતા - અભ્યાસ': form.parentInfo?.mother?.study || '',
+            'માતા - વ્યવસાય': form.parentInfo?.mother?.occupation || '',
+            'માતા - છેલ્લી સત્સંગ પરીક્ષા': form.parentInfo?.mother?.lastSatsangExam || '',
+            'માતા - બોર્ડ': form.parentInfo?.mother?.board || '',
+            'માતા - સત્સંગ': form.parentInfo?.mother?.satsang || '',
+
+            // Dates
+            'પ્રવેશ તારીખ': formatDate(form.admissionDate),
+            'વિદાય તારીખ': formatDate(form.departureDate),
+            'વિદાયનું કારણ': form.departureReason || '',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+
+        // Auto-width columns
+        const maxWidths = {};
+        exportData.forEach(row => {
+            Object.keys(row).forEach(key => {
+                const val = String(row[key] || '');
+                maxWidths[key] = Math.max(maxWidths[key] || key.length, val.length);
+            });
+        });
+        ws['!cols'] = Object.keys(maxWidths).map(key => ({ wch: Math.min(maxWidths[key] + 2, 30) }));
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'BAPS બાળક ડેટા');
+
+        const today = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `BAPS_બાળક_ડેટા_${today}.xlsx`);
+        toast.success(`${forms.length} રેકોર્ડ એક્સપોર્ટ થયા`);
     };
 
     return (
@@ -107,15 +221,24 @@ const Dashboard = () => {
                         </>
                     )}
                 </div>
-                {hasPermission('canAdd') && (
-                    <Link
-                        to="/new-form"
-                        className="w-full sm:w-auto bg-saffron hover:bg-saffron-dark text-white px-8 py-3.5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-saffron/20 transition-all active:scale-95 font-black text-lg"
+                <div className="flex gap-3 w-full sm:w-auto">
+                    <button
+                        onClick={handleExport}
+                        className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-green-600/20 transition-all active:scale-95 font-black text-base"
                     >
-                        <Plus size={24} />
-                        <span>નવું ફોર્મ ઉમેરો</span>
-                    </Link>
-                )}
+                        <Download size={22} />
+                        <span>એક્સપોર્ટ</span>
+                    </button>
+                    {hasPermission('canAdd') && (
+                        <Link
+                            to="/new-form"
+                            className="w-full sm:w-auto bg-saffron hover:bg-saffron-dark text-white px-8 py-3.5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-saffron/20 transition-all active:scale-95 font-black text-lg"
+                        >
+                            <Plus size={24} />
+                            <span>નવું ફોર્મ ઉમેરો</span>
+                        </Link>
+                    )}
+                </div>
             </div>
 
             {/* Table Section - Desktop */}
